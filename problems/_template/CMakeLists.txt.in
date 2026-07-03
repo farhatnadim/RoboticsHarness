@@ -1,0 +1,19 @@
+# Problem: @PROBLEM_NAME@ — @PROBLEM_DESC@
+
+add_executable(@PROBLEM_NAME@_app src/main.cpp)
+target_link_libraries(@PROBLEM_NAME@_app PRIVATE harness::core harness::default_flags)
+
+# Realtime tier opt-in (then verify with /rt-check):
+# harness_enable_realtime(@PROBLEM_NAME@_app)
+
+if(BUILD_TESTING)
+    include(GoogleTest)
+    add_executable(@PROBLEM_NAME@_tests tests/test_smoke.cpp)
+    target_link_libraries(@PROBLEM_NAME@_tests PRIVATE
+        harness::core
+        harness::default_flags
+        GTest::gtest_main
+    )
+    # TEST_PREFIX makes `ctest -R @PROBLEM_NAME@` match this problem's tests.
+    gtest_discover_tests(@PROBLEM_NAME@_tests TEST_PREFIX "@PROBLEM_NAME@.")
+endif()

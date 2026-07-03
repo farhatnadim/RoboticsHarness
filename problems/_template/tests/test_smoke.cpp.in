@@ -1,0 +1,10 @@
+// Smoke test for @PROBLEM_NAME@: proves the problem builds against harness::core.
+
+#include "harness/spatial/so3.hpp"
+
+#include <gtest/gtest.h>
+
+TEST(Smoke, CoreLibraryLinks) {
+    const Eigen::Vector3d w(0.1, 0.2, 0.3);
+    EXPECT_TRUE(harness::spatial::log_so3(harness::spatial::exp_so3(w)).isApprox(w, 1e-9));
+}

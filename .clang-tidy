@@ -1,0 +1,22 @@
+---
+Checks: >
+  cert-*,
+  cppcoreguidelines-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -readability-named-parameter
+WarningsAsErrors: ''
+HeaderFilterRegex: '(core|problems)/.*\.(hpp|h)$'
+FormatStyle: file
+CheckOptions:
+  readability-function-cognitive-complexity.Threshold: '25'
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'

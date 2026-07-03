@@ -1,0 +1,12 @@
+// @PROBLEM_NAME@ — @PROBLEM_DESC@
+
+#include "harness/control/pid.hpp"
+
+#include <cstdio>
+
+int main() {
+    harness::control::Pid pid({.kp = 1.0, .ki = 0.1, .kd = 0.01});
+    const double out = pid.update(1.0, 0.01);
+    std::printf("@PROBLEM_NAME@: core linked, pid first output = %f\n", out);
+    return 0;
+}

@@ -1,0 +1,10 @@
+# @PROBLEM_NAME@
+
+@PROBLEM_DESC@
+
+Part of RoboticsHarness — links `harness::core`. Build and test from the repo root:
+
+```sh
+cmake --build --preset debug --target @PROBLEM_NAME@_app @PROBLEM_NAME@_tests
+ctest --preset debug -R @PROBLEM_NAME@
+```
