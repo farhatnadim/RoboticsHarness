@@ -50,3 +50,14 @@ TEST(PlanarChain, IkReturnsNulloptForUnreachableTarget) {
     const PlanarChain<2> chain({1.0, 1.0});
     EXPECT_FALSE(chain.solve_ik(Eigen::Vector2d(0.1, 0.1), Eigen::Vector2d(5.0, 0.0)).has_value());
 }
+
+// solve_ik's damped JJt.inverse() is an Eigen decomposition path; per the
+// CLAUDE.md realtime rule it needs a runtime malloc-guard proof (the static
+// symbol scan can't distinguish dead allocation branches from live ones).
+TEST(RealtimeGuard, IkDoesNotAllocate) {
+    const PlanarChain<3> chain({1.0, 0.8, 0.5});
+    Eigen::internal::set_is_malloc_allowed(false);
+    const auto q = chain.solve_ik(Eigen::Vector3d(0.2, 0.2, 0.2), Eigen::Vector2d(1.2, 0.9));
+    Eigen::internal::set_is_malloc_allowed(true);
+    ASSERT_TRUE(q.has_value());
+}

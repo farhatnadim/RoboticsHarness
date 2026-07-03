@@ -2,6 +2,8 @@
 
 add_executable(@PROBLEM_NAME@_app src/main.cpp)
 target_link_libraries(@PROBLEM_NAME@_app PRIVATE harness::core harness::default_flags)
+# Problem-local headers (models, helpers) live in include/.
+target_include_directories(@PROBLEM_NAME@_app PRIVATE include)
 
 # Realtime tier opt-in (then verify with /rt-check):
 # harness_enable_realtime(@PROBLEM_NAME@_app)
@@ -14,6 +16,7 @@ if(BUILD_TESTING)
         harness::default_flags
         GTest::gtest_main
     )
+    target_include_directories(@PROBLEM_NAME@_tests PRIVATE include)
     # TEST_PREFIX makes `ctest -R @PROBLEM_NAME@` match this problem's tests.
     gtest_discover_tests(@PROBLEM_NAME@_tests TEST_PREFIX "@PROBLEM_NAME@.")
 endif()

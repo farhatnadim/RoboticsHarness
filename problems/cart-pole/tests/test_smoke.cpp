@@ -11,6 +11,25 @@
 
 #include "cart_pole_model.hpp"
 
+// Guards against sign errors in the linearization: an inverted pendulum
+// diverges monotonically from a small tilt under zero input (cosh growth),
+// while a wrongly-signed (hanging) model oscillates back through zero. A
+// spectral-radius check alone can't tell them apart — forward Euler makes
+// the hanging model's poles slightly unstable too.
+TEST(CartPole, OpenLoopUprightIsUnstable) {
+    using namespace cart_pole;
+    const Eigen::Matrix4d a = discrete_a();
+    Eigen::Vector4d x;
+    x << 0.0, 0.0, 0.01, 0.0;
+    double prev_angle = x(2);
+    for (int i = 0; i < 50; ++i) { // 1 s at 50 Hz
+        x = a * x;
+        EXPECT_GE(x(2), prev_angle); // never swings back toward upright
+        prev_angle = x(2);
+    }
+    EXPECT_GT(x(2), 0.05); // cosh(omega*t) growth: >5x initial tilt in 1 s
+}
+
 TEST(CartPole, LqrStabilizesFromSmallTilt) {
     using namespace cart_pole;
     const Eigen::Matrix4d a = discrete_a();

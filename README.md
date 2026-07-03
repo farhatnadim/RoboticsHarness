@@ -33,7 +33,7 @@ ctest --preset debug
 ## Evolution loop
 
 Hooks journal build/test/sanitizer failures automatically into `evolution/journal.ndjson`.
-Run `/evolve` (or when nudged at session end) to cluster the journal and apply reviewed
+Run `/evolve` (or when nudged at session start) to cluster the journal and apply reviewed
 improvements to skills, rules, and the backlog. Applied changes are logged in `EVOLUTION.md`.
 
 ## Toolchain

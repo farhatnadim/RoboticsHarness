@@ -25,11 +25,19 @@
 # void*)) is excluded entirely — it never allocates.
 #
 # Usage: tools/rt_symbol_scan.sh <build-dir> <target-name>
-# Exit: 0 no hard violations, 1 hard violations found, 2 no object files for target.
+# Exit: 0 no hard violations, 1 hard violations found,
+#       2 cannot scan (no object files for target, or nm missing).
 set -u
 
 build_dir="${1:?usage: rt_symbol_scan.sh <build-dir> <target>}"
 target="${2:?usage: rt_symbol_scan.sh <build-dir> <target>}"
+
+# This is a hard gate: without nm the scan would see empty symbol lists and
+# report a false PASS, so a missing binutils is a failure, not a no-op.
+if ! command -v nm >/dev/null 2>&1; then
+    echo "error: 'nm' not found; cannot scan symbols (install binutils)" >&2
+    exit 2
+fi
 
 HARD_PATTERN='__cxa_throw|__cxa_allocate_exception|typeinfo for '
 # Anchored at end-of-line so "operator new(unsigned long)" doesn't match the

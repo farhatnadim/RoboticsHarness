@@ -25,6 +25,7 @@ namespace {
     const Eigen::Matrix3d R = spatial::exp_so3(w);
     const spatial::SE3 T{R, Eigen::Vector3d(1.0, 2.0, 3.0)};
     const spatial::Vector6d xi = (T * T.inverse()).log();
+    const spatial::SE3 T_exp = spatial::exp_se3(xi);
 
     control::Pid pid({.kp = 1.0, .ki = 0.1, .kd = 0.01});
     const double u = pid.update(0.5, 0.01);
@@ -52,7 +53,7 @@ namespace {
     const auto ik = chain.solve_ik(Eigen::Vector2d(0.1, 0.1), Eigen::Vector2d(1.2, 0.5));
 
     double acc = xi.sum() + u + pose.sum() + quintic.position(1.0) + trap.position(3.0) +
-                 kf.state().sum() + spatial::log_so3(R).sum();
+                 kf.state().sum() + spatial::log_so3(R).sum() + T_exp.translation().sum();
     if (K.has_value()) {
         acc += K->sum();
     }
@@ -66,4 +67,6 @@ namespace {
 
 // Exported anchor so the exercise code is not eliminated as unused.
 [[nodiscard]] double harness_rt_check_anchor();
-[[nodiscard]] double harness_rt_check_anchor() { return exercise_all(); }
+[[nodiscard]] double harness_rt_check_anchor() {
+    return exercise_all();
+}

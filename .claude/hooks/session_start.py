@@ -5,15 +5,11 @@ Stdout from SessionStart hooks is injected into the session context, so the
 assistant sees the nudge and can relay it. Never blocks: always exits 0.
 """
 import json
-import os
 import sys
 
+from _journal import journal_path
+
 NUDGE_THRESHOLD = 10
-
-
-def journal_path() -> str:
-    root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-    return os.path.join(root, "evolution", "journal.ndjson")
 
 
 def main() -> None:

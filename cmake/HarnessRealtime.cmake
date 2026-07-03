@@ -1,6 +1,8 @@
-# Opt a target into the realtime tier. /rt-check discovers realtime targets by
-# grepping the tree for calls to this function, so always call it literally:
-#   harness_enable_realtime(my_target)
+# Opt a target into the realtime tier. Every opted-in target is recorded in
+# the HARNESS_REALTIME_TARGETS global property, which the top-level
+# CMakeLists.txt dumps to <build-dir>/realtime_targets.txt at configure time —
+# that file is /rt-check's authoritative target list (a grep of the source
+# tree would also match commented-out calls and prose).
 function(harness_enable_realtime target)
     target_link_libraries(${target} PRIVATE harness::realtime_flags)
     set_target_properties(${target} PROPERTIES HARNESS_TIER realtime)

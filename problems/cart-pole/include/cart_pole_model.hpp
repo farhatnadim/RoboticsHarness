@@ -18,9 +18,9 @@ constexpr double kDt = 0.02;        // s, 50 Hz control loop
 [[nodiscard]] inline Eigen::Matrix4d discrete_a() {
     Eigen::Matrix4d a_c = Eigen::Matrix4d::Zero();
     a_c(0, 1) = 1.0;
-    a_c(1, 2) = kPoleMass * kGravity / kCartMass;
+    a_c(1, 2) = -kPoleMass * kGravity / kCartMass;
     a_c(2, 3) = 1.0;
-    a_c(3, 2) = -(kCartMass + kPoleMass) * kGravity / (kCartMass * kPoleLength);
+    a_c(3, 2) = (kCartMass + kPoleMass) * kGravity / (kCartMass * kPoleLength);
     return Eigen::Matrix4d::Identity() + kDt * a_c;
 }
 

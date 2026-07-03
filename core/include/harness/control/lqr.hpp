@@ -20,6 +20,12 @@ dlqr(const Eigen::Matrix<double, N, N>& A, const Eigen::Matrix<double, N, M>& B,
         const Eigen::Matrix<double, M, M> S = R + B.transpose() * P * B;
         const Eigen::Matrix<double, M, N> K = S.ldlt().solve(B.transpose() * P * A);
         const Eigen::Matrix<double, N, N> P_next = Q + A.transpose() * P * (A - B * K);
+        // Divergence (unstabilizable pair) overflows P to inf/NaN; bail out
+        // instead of burning the remaining iterations on a comparison that
+        // can never become true.
+        if (!P_next.allFinite()) {
+            return std::nullopt;
+        }
         if ((P_next - P).cwiseAbs().maxCoeff() < tol) {
             const Eigen::Matrix<double, M, M> S_final = R + B.transpose() * P_next * B;
             return S_final.ldlt().solve(B.transpose() * P_next * A);

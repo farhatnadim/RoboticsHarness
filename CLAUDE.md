@@ -52,8 +52,10 @@ Never claim done without having run the build and tests.
 - `evolution/journal.ndjson` is **append-only**. Never delete or rewrite lines.
 - Hooks journal build/test/sanitizer failures automatically. When you notice recurring
   friction the hooks can't see (e.g. repeatedly looking up the same API, a template gap),
-  append a `note` entry yourself:
-  `{"ts": "<utc-iso>", "type": "note", "excerpt": "<the lesson>", "tags": [..]}`.
+  append a `note` entry yourself — always via
+  `bash tools/journal_note.sh "<the lesson>" tag1 tag2`, which stamps a correct UTC
+  timestamp (hand-written notes have carried local wall-clock time with a `Z` suffix,
+  breaking journal chronology).
 - Run `/evolve` when the session-start nudge fires or roughly weekly.
 - `/evolve` proposes diffs and applies them **only after user approval**; applied changes
   are recorded in `EVOLUTION.md`. No other path may rewrite rules or skills.

@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 using harness::trajectory::QuinticPolynomial;
 using harness::trajectory::TrapezoidalProfile;
 
@@ -33,6 +35,16 @@ TEST(Quintic, VelocityIsDerivativeOfPosition) {
         const double fd = (q.position(t + h) - q.position(t - h)) / (2.0 * h);
         EXPECT_NEAR(q.velocity(t), fd, 1e-5);
     }
+}
+
+// The constructor's M.inverse() is an Eigen decomposition path; per the
+// CLAUDE.md realtime rule it needs a runtime malloc-guard proof.
+TEST(RealtimeGuard, QuinticDoesNotAllocate) {
+    Eigen::internal::set_is_malloc_allowed(false);
+    const QuinticPolynomial q(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 2.0);
+    const double sample = q.position(1.0) + q.velocity(1.0) + q.acceleration(1.0);
+    Eigen::internal::set_is_malloc_allowed(true);
+    EXPECT_TRUE(std::isfinite(sample));
 }
 
 TEST(Trapezoidal, FullProfileTimingAndDistance) {

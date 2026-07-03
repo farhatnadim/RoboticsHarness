@@ -50,6 +50,16 @@ TEST(So3, NearPiRoundTrip) {
     EXPECT_TRUE(hs::exp_so3(w).isApprox(R, 1e-6));
 }
 
+TEST(So3, ExactlyPiRoundTrip) {
+    const Eigen::Vector3d axis = Eigen::Vector3d(0.2, -1.0, 0.4).normalized();
+    const Eigen::Matrix3d R = hs::exp_so3(std::numbers::pi * axis);
+    const Eigen::Vector3d w = hs::log_so3(R);
+    EXPECT_NEAR(w.norm(), std::numbers::pi, 1e-9);
+    // exp(pi*a) == exp(-pi*a), so either sign of the recovered axis is a
+    // valid log; round-tripping through exp is the sign-agnostic check.
+    EXPECT_TRUE(hs::exp_so3(w).isApprox(R, 1e-9));
+}
+
 TEST(So3, LeftJacobianInverseIsInverse) {
     const Eigen::Vector3d phi(0.4, -0.3, 0.8);
     const Eigen::Matrix3d JJinv = hs::left_jacobian_so3(phi) * hs::left_jacobian_inv_so3(phi);
@@ -72,8 +82,8 @@ TEST(Se3, ExpLogRoundTrip) {
 TEST(Se3, ActMatchesManualTransform) {
     const Eigen::Matrix3d R = hs::exp_so3(Eigen::Vector3d(0.0, 0.0, std::numbers::pi / 2.0));
     const hs::SE3 T{R, Eigen::Vector3d(1.0, 0.0, 0.0)};
-    EXPECT_TRUE(T.act(Eigen::Vector3d(1.0, 0.0, 0.0)).isApprox(Eigen::Vector3d(1.0, 1.0, 0.0),
-                                                               1e-12));
+    EXPECT_TRUE(
+        T.act(Eigen::Vector3d(1.0, 0.0, 0.0)).isApprox(Eigen::Vector3d(1.0, 1.0, 0.0), 1e-12));
 }
 
 // Compiled with EIGEN_RUNTIME_NO_MALLOC on the test target: proves the hot

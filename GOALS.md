@@ -13,9 +13,17 @@
 
 - [x] Install clang toolchain and switch `CMakePresets.json` to `clang++` (done: clang
       18.1.3 installed, all presets rebuilt and verified green)
-- [ ] Make `capture_failure.py` classify by actual command exit code instead of regex over
-      raw text output (currently over-captures on chained `&&` commands / historical text
-      embedded in later output — never blocks work, just adds journal noise)
+- [x] Make `capture_failure.py` stop over-capturing on chained commands / quoted text
+      (done in the 2026-07-03 council review: build verbs anchored to command position,
+      journal-touching commands skipped, decoded stdout/stderr classified, excerpt
+      windowed around the first marker; exit codes remain unavailable in the hook's
+      tool_response schema, so classification stays marker-based by design)
+- [ ] Optional-returning factories (or equivalent guarded construction) for
+      `QuinticPolynomial` (`duration == 0`) and `TrapezoidalProfile`
+      (`v_max/a_max <= 0`) — constructors currently propagate silent NaN on
+      precondition violation, against the errors-via-std::optional realtime rule
+- [ ] Kalman test with NZ > 1 (gain/transpose logic only validated for scalar
+      measurements so far); SE3 log round-trip test for a near-pi rotation
 - [ ] Extended Kalman filter (EKF) with numeric-Jacobian fallback
 - [ ] 3D serial-chain kinematics (product of exponentials)
 - [ ] Continuous-time LQR via CARE solver

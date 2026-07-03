@@ -20,6 +20,14 @@ anything without per-item user approval.
    Count occurrences per cluster. Report the cluster summary to the user before proposing
    anything.
 
+   Skip `session_end` entries entirely — they are lifecycle markers, not friction.
+   The journal is append-only, so known noise stays in it forever; read it robustly:
+   entries from 2026-07-03 include pre-fix classifier false positives (all-green ctest
+   runs labeled `test_failure`), hook self-test entries (`session_id: "test123"`,
+   deliberate `/rt-check` smoke failures), and hand-written notes whose `ts` carries
+   local wall-clock time with a `Z` suffix. Weigh such entries accordingly instead of
+   clustering them as real recurring friction.
+
    If `--dry-run` was passed: stop here after printing the cluster summary. Do not
    propose changes, do not touch any file, do not append an `evolve_mark`.
 
@@ -42,11 +50,13 @@ anything without per-item user approval.
    ```
 
 6. **Append the mark**: add one line to `evolution/journal.ndjson`:
-   `{"ts": "<utc-iso8601>", "type": "evolve_mark", "applied": <n>, "proposed": <m>}`.
+   `{"ts": "<utc-iso8601>", "type": "evolve_mark", "applied": <n>, "proposed": <m>}`
+   (UTC from `date -u +%FT%TZ`, not local wall-clock time).
 
 ## Rules
 
-- The journal itself is append-only — `/evolve` reads it, never edits or deletes lines.
+- The journal itself is append-only — `/evolve` reads it, never edits or deletes lines
+  (a PreToolUse hook also blocks Edit/Write on it).
 - `/evolve` is the only path allowed to rewrite `CLAUDE.md`, skills, or hooks based on
   accumulated experience, and only after explicit user approval per item.
 - If nothing has accumulated since the last mark, say so and stop — don't manufacture

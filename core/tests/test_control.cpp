@@ -45,6 +45,15 @@ TEST(Pid, ResetClearsState) {
     EXPECT_DOUBLE_EQ(pid.update(1.0, 0.1), first);
 }
 
+TEST(Pid, NonPositiveDtDegradesToClampedP) {
+    Pid pid({.kp = 2.0, .ki = 1.0, .kd = 1.0}, {.out_min = -3.0, .out_max = 3.0});
+    EXPECT_DOUBLE_EQ(pid.update(1.0, 0.0), 2.0);  // pure P response
+    EXPECT_DOUBLE_EQ(pid.update(5.0, -0.1), 3.0); // clamped, negative dt
+    EXPECT_DOUBLE_EQ(pid.integral(), 0.0);        // state untouched by either call
+    // First valid update still sees no previous error (zero derivative).
+    EXPECT_DOUBLE_EQ(pid.update(1.0, 0.1), 2.0 + 1.0 * 0.1);
+}
+
 TEST(Lqr, DoubleIntegratorStabilizes) {
     const double dt = 0.1;
     Eigen::Matrix2d A;
