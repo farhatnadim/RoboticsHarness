@@ -52,3 +52,16 @@ TEST(Kalman, CovarianceStaysSymmetricPsd) {
         EXPECT_GE(solver.eigenvalues().minCoeff(), -1e-12);
     }
 }
+
+// update()'s .ldlt().solve() routes through the same Eigen blocked-GEMM
+// internals as dlqr (see RealtimeGuard.LqrDoesNotAllocate) — statically
+// references operator new/malloc but never calls them for our fixed 2x1
+// sizes. Proven at runtime rather than via static symbol scanning.
+TEST(RealtimeGuard, KalmanDoesNotAllocate) {
+    KF kf = make_cv_filter(0.1);
+    Eigen::internal::set_is_malloc_allowed(false);
+    kf.predict();
+    kf.update(Eigen::Matrix<double, 1, 1>::Constant(0.5));
+    Eigen::internal::set_is_malloc_allowed(true);
+    EXPECT_LT(kf.covariance().trace(), 2.0);
+}

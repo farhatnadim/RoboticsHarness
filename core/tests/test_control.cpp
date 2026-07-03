@@ -75,3 +75,22 @@ TEST(Lqr, UnstabilizableReturnsNullopt) {
     const Eigen::Matrix<double, 1, 1> R = Eigen::Matrix<double, 1, 1>::Identity();
     EXPECT_FALSE((harness::control::dlqr<2, 1>(A, B, Q, R, 50).has_value()));
 }
+
+// dlqr's .ldlt().solve() routes through Eigen's generic blocked-GEMM internals,
+// which statically reference operator new/malloc even for fixed 2x2 matrices
+// (confirmed via objdump: those symbols exist in the object but are never
+// called for our sizes). This test proves it at runtime instead of relying on
+// static symbol presence, which is unreliable for Eigen decomposition code.
+TEST(RealtimeGuard, LqrDoesNotAllocate) {
+    Eigen::Matrix2d A;
+    A << 1.0, 0.1, 0.0, 1.0;
+    Eigen::Matrix<double, 2, 1> B;
+    B << 0.005, 0.1;
+    const Eigen::Matrix2d Q = Eigen::Matrix2d::Identity();
+    const Eigen::Matrix<double, 1, 1> R = Eigen::Matrix<double, 1, 1>::Identity();
+
+    Eigen::internal::set_is_malloc_allowed(false);
+    const auto K = harness::control::dlqr<2, 1>(A, B, Q, R);
+    Eigen::internal::set_is_malloc_allowed(true);
+    ASSERT_TRUE(K.has_value());
+}

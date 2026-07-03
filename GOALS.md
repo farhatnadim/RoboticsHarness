@@ -10,9 +10,8 @@
 
 ## Backlog
 
-- [ ] Install clang toolchain (`sudo apt install clang clang-format clang-tidy`) and switch
-      `CMakePresets.json` back to `CMAKE_CXX_COMPILER=g++` → `clang++` (currently on g++
-      13.3.0 since clang binaries aren't installed on this machine; see CLAUDE.md Toolchain)
+- [x] Install clang toolchain and switch `CMakePresets.json` to `clang++` (done: clang
+      18.1.3 installed, all presets rebuilt and verified green)
 - [ ] Make `capture_failure.py` classify by actual command exit code instead of regex over
       raw text output (currently over-captures on chained `&&` commands / historical text
       embedded in later output — never blocks work, just adds journal noise)

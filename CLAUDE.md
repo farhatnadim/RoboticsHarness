@@ -60,19 +60,26 @@ Never claim done without having run the build and tests.
 
 ## Toolchain
 
-- Ninja, presets only: `cmake --preset debug`, `cmake --build --preset debug`,
+- clang++, Ninja, presets only: `cmake --preset debug`, `cmake --build --preset debug`,
   `ctest --preset debug`. Same with `release`.
-- **Compiler**: `g++` is the current preset compiler (`CMakeLists.txt`'s
-  `CMAKE_CXX_COMPILER`) because `clang++`/`clang-format`/`clang-tidy` are not installed on
-  this machine — only libclang shared libs are present. Clang is still the intended
-  long-term compiler (matches the rest of the workspace and `.clangd`/`.clang-format`
-  configs); switch the preset back to `clang++` once `sudo apt install clang clang-format
-  clang-tidy` has been run (backlog item in `GOALS.md`). All flags in
-  `cmake/HarnessFlags.cmake` are GCC/Clang-compatible so the switch is a one-line preset
-  change.
 - The `format_cpp.py` hook and `/rt-check`'s clang-tidy gate no-op silently when the
-  respective binary is missing — they do not block work in the meantime.
+  respective binary is missing — they do not block work if the toolchain is incomplete.
 - compile_commands.json lives in `build/debug` (`.clangd` points there).
 - Dependencies: Eigen via system find_package with pinned FetchContent fallback; GoogleTest
   always pinned FetchContent. No conan/vcpkg.
 - `GOALS.md` follows The_Architect checkbox convention (`- [ ]` / `- [x]` under `## Goals`).
+
+## Realtime symbol scan vs. runtime malloc-guard tests
+
+`/rt-check`'s `tools/rt_symbol_scan.sh` treats exception/RTTI symbols (`__cxa_throw`,
+typeinfo) as hard failures but allocating `operator new` references as an advisory only —
+**not** a hard failure. Eigen's generic decomposition internals (`.ldlt()`, `.inverse()`,
+similar) statically reference `operator new`/`malloc` in their blocked-GEMM template code
+even for small fixed-size matrices that never actually take that branch at runtime; a
+static symbol scan can't tell "compiled in but dead" from "actually called". When Gate 2
+emits this advisory for a piece of code, prove it doesn't allocate with a runtime
+malloc-guard test instead: `Eigen::internal::set_is_malloc_allowed(false)` around the call,
+with `EIGEN_RUNTIME_NO_MALLOC` defined on the test target — see
+`RealtimeGuard.LqrDoesNotAllocate` / `RealtimeGuard.KalmanDoesNotAllocate` in
+`core/tests/` for the pattern. Any new core function using an Eigen decomposition needs
+this kind of test alongside its correctness tests.

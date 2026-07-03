@@ -38,3 +38,29 @@ Initial v0 build-out and verification pass. Cluster summary from the journal
 matching over raw stdout/stderr text rather than actual command exit codes, which can
 misfire on chained (`&&`) commands or historical text embedded in later output. Low
 priority since it only over-captures (never blocks work) — tracked in `GOALS.md`.
+
+## 2026-07-03 (later same day)
+
+User installed clang/clang-format/clang-tidy 18.1.3; switched `CMakePresets.json` back to
+`clang++` per the backlog item, wiped and reconfigured both build dirs, and reverified
+(green on both presets). This surfaced a second, more interesting `rt_symbol_scan.sh`
+finding while re-running `/rt-check`:
+
+- **Static operator-new scanning is fundamentally unreliable for Eigen decomposition code
+  (fixed directly, design change)** — under clang, even the *release* preset showed a
+  reference to `operator new(unsigned long)` in `core_rt_compile_check` (unlike gcc, where
+  release was clean). Traced via `nm -C` + `objdump -r` to Eigen's generic
+  `triangular_solve_matrix`/`gemm_pack_rhs` internals (used by `.ldlt().solve()`, which both
+  `dlqr` and `KalmanFilter::update` call) — these reference `operator new`/`malloc`
+  statically regardless of matrix size, with no way for a symbol scan to tell "compiled in
+  but never taken for our fixed 2x2/2x1/1x1 types" from "actually called". Redesigned
+  `tools/rt_symbol_scan.sh`: exception/RTTI symbols remain hard failures (reliable — a bare
+  `throw` is a compile error under `-fno-exceptions`, confirmed empirically); allocating
+  `operator new`/`new[]` became an advisory that points at a runtime malloc-guard test
+  instead of failing the gate. Added `RealtimeGuard.LqrDoesNotAllocate` and
+  `RealtimeGuard.KalmanDoesNotAllocate` (`core/tests/test_control.cpp`,
+  `core/tests/test_estimation.cpp`) using `Eigen::internal::set_is_malloc_allowed(false)` —
+  both pass, proving no runtime allocation for our concrete fixed sizes. Documented the
+  distinction in `CLAUDE.md` and rewrote `/rt-check`'s Gate 2/3 description (added a Gate 4
+  for the runtime malloc-guard pattern).
+- Marked the "install clang" backlog item done in `GOALS.md`.

@@ -13,7 +13,7 @@ harness improvements.
 | `cmake/` | Flag tiers (`harness::default_flags`, `harness::realtime_flags`), dependencies |
 | `evolution/` | Append-only lesson journal (`journal.ndjson`) feeding `/evolve` |
 | `.claude/` | Skills (`/new-problem`, `/evolve`, `/rt-check`) and hooks (auto-format, failure capture) |
-| `tools/` | `rt_symbol_scan.sh` — nm scan for exceptions/RTTI/heap symbols in realtime targets |
+| `tools/` | `rt_symbol_scan.sh` — nm scan for exception/RTTI symbols (hard fail) and allocation-capable symbols (advisory) in realtime targets |
 
 ## Building
 
@@ -38,9 +38,6 @@ improvements to skills, rules, and the backlog. Applied changes are logged in `E
 
 ## Toolchain
 
-CMake 3.28.3, Ninja 1.11.1, Python 3.12.3, system Eigen3 at `/usr/include/eigen3`.
-Compiler is currently **g++ 13.3.0** (`clang++`/`clang-format`/`clang-tidy` are not
-installed on this machine — see the backlog item in `GOALS.md` to install clang and
-switch `CMakePresets.json` back). All harness flags are GCC/Clang-compatible, so problem
-code is unaffected either way. GoogleTest always via pinned FetchContent (v1.14.0); no
-conan/vcpkg.
+CMake 3.28.3, Ninja 1.11.1, Clang/clang-format/clang-tidy 18.1.3, Python 3.12.3, system
+Eigen3 at `/usr/include/eigen3`. GoogleTest always via pinned FetchContent (v1.14.0); no
+conan/vcpkg. All harness flags are also GCC-compatible if clang is ever unavailable.
