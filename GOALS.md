@@ -6,7 +6,8 @@
 - [x] Realtime tier verification in place (compile check + symbol scan + /rt-check skill)
 - [x] Problem scaffolding works end-to-end (/new-problem creates a building, tested project)
 - [x] Self-evolution loop live (hooks journal failures; /evolve produces reviewed harness changes)
-- [ ] First real robotics problem attacked through the harness
+- [x] First real robotics problem attacked through the harness (`problems/cart-pole`:
+      LQR-balanced inverted pendulum)
 
 ## Backlog
 
