@@ -1,5 +1,5 @@
 # CAUTION
-PURLE CLAUDE CODE FABLE 5 generated, I DID NOT DO ANY EDITS OR REVIEW , use it your OWN RISK. Fable 5 pulled skills from other Github , I attributted them to their orignal owners. Please do the same. 
+All was generated with CLAUDE CODE FABLE , I DID NOT DO ANY EDITS OR REVIEW , use it your OWN RISK. Fable 5 pulled skills from other Github , I attributted them to their orignal owners. Please do the same. 
 
 
 # RoboticsHarness
