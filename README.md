@@ -12,7 +12,7 @@ harness improvements.
 | `problems/` | One directory per robotics problem, scaffolded by `/new-problem`, linking `harness::core` |
 | `cmake/` | Flag tiers (`harness::default_flags`, `harness::realtime_flags`), dependencies |
 | `evolution/` | Append-only lesson journal (`journal.ndjson`) feeding `/evolve` |
-| `.claude/` | Skills (`/new-problem`, `/evolve`, `/rt-check`) and hooks (auto-format, failure capture) |
+| `.claude/` | Skills (`/new-problem`, `/evolve`, `/rt-check`), hooks (auto-format, failure capture, journal guard), and 13 vendored third-party robotics/embedded/C++ skills |
 | `tools/` | `rt_symbol_scan.sh` — nm scan for exception/RTTI symbols (hard fail) and allocation-capable symbols (advisory) in realtime targets |
 
 ## Building
@@ -35,6 +35,18 @@ ctest --preset debug
 Hooks journal build/test/sanitizer failures automatically into `evolution/journal.ndjson`.
 Run `/evolve` (or when nudged at session start) to cluster the journal and apply reviewed
 improvements to skills, rules, and the backlog. Applied changes are logged in `EVOLUTION.md`.
+
+## Bundled third-party skills
+
+Thirteen vendored Claude Code skills ship with the repo so any clone gets robotics
+domain knowledge out of the box: ten ROS/robotics-engineering skills from
+[arpitg1304/robotics-agent-skills](https://github.com/arpitg1304/robotics-agent-skills)
+(Apache-2.0), `embedded-systems` and `cpp-pro` from
+[Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) (MIT), and
+`arm-cortex-expert` from
+[sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills)
+(MIT, lightly cleaned). Full attribution, license texts, per-source commit SHAs, and
+the update procedure live in `.claude/skills/THIRD_PARTY.md` and `.claude/skills/licenses/`.
 
 ## Toolchain
 

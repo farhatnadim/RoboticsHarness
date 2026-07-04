@@ -59,6 +59,9 @@ Never claim done without having run the build and tests.
 - Run `/evolve` when the session-start nudge fires or roughly weekly.
 - `/evolve` proposes diffs and applies them **only after user approval**; applied changes
   are recorded in `EVOLUTION.md`. No other path may rewrite rules or skills.
+- The `/evolve`-only rule covers the harness-native skills (`evolve`, `new-problem`,
+  `rt-check`). The vendored third-party skills in `.claude/skills/` are synced from
+  upstream instead — see `.claude/skills/THIRD_PARTY.md`; never hand-edit them.
 
 ## Toolchain
 
