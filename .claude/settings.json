@@ -18,6 +18,11 @@
                     {
                         "type": "command",
                         "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format_cpp.py"
+                    },
+                    {
+                        "type": "command",
+                        "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint_cpp.py",
+                        "timeout": 180
                     }
                 ]
             },
@@ -27,6 +32,17 @@
                     {
                         "type": "command",
                         "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/capture_failure.py"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/gate_stop.py",
+                        "timeout": 900
                     }
                 ]
             }

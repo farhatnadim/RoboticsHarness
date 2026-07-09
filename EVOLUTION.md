@@ -111,3 +111,28 @@ strongest emphasis on the hooks), applied with user approval of the review plan
   quintic/trapezoidal preconditions, Kalman NZ>1 test, SE3 log near π.
 
 42/42 tests green on both presets after all changes.
+
+## 2026-07-09
+
+User-directed addition of static-analysis and sanitizer enforcement to the hooks
+(applied directly at the user's request, same path as the council review):
+
+- **New `lint_cpp.py` (PostToolUse, `Edit|Write|MultiEdit`)** — runs clang-tidy on any
+  C++ file the agent touches, using `build/debug/compile_commands.json`. Headers (not
+  compile-DB entries) are linted through a TU that includes them: core headers via
+  `core/tests/rt_compile_check.cpp` (which by contract includes every core header),
+  problem headers via a compile-DB entry from the same problem directory. Findings are
+  filtered back to the edited file, fed to the agent via exit 2, and journaled compactly
+  (`static_analysis` entries: relative path + check names only). Silent no-op when
+  clang-tidy or the compile DB is missing, per the existing toolchain convention.
+- **New `gate_stop.py` (Stop)** — when the turn ends with modified/untracked C++ or
+  CMake files, builds and runs the full ASan/UBSan debug suite
+  (`cmake --build --preset debug && ctest --preset debug`). A red suite blocks the stop
+  (exit 2) with a failure excerpt and journals it with capture_failure's schema; when
+  `stop_hook_active` is already set the gate reports but no longer blocks, so a hard
+  failure can't loop forever. Green runs are stamped by a content digest in
+  `build/debug/.gate_stop_green`, so stops with an unchanged tree cost ~40 ms.
+- Verified with deliberate, self-reverted injections: a `modernize-use-nullptr`
+  violation (caught, journaled, exit 2) and a `static_assert(false)` build break
+  (blocked the stop, journaled, advisory on the simulated retry). Timings: no-op 0.04 s,
+  full green run ~15 s, stamp skip 0.04 s.
