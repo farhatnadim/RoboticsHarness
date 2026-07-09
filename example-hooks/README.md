@@ -128,9 +128,9 @@ See [EXAMPLES.md](EXAMPLES.md) for four walkthroughs with verbatim captured outp
 and `demos/` for the three re-runnable versions:
 
 ```bash
-bash archive/example-hooks/demos/demo_1_lint_autocorrect.sh     # clang-tidy catches 0-as-nullptr, agent fixes  (~30 s)
-bash archive/example-hooks/demos/demo_2_stop_gate_sanitizer.sh  # ASan OOB read blocks the stop, agent fixes    (~40 s)
-bash archive/example-hooks/demos/demo_3_guard_journal.sh        # PreToolUse veto + redirect to sanctioned path (instant)
+bash example-hooks/demos/demo_1_lint_autocorrect.sh     # clang-tidy catches 0-as-nullptr, agent fixes  (~30 s)
+bash example-hooks/demos/demo_2_stop_gate_sanitizer.sh  # ASan OOB read blocks the stop, agent fixes    (~40 s)
+bash example-hooks/demos/demo_3_guard_journal.sh        # PreToolUse veto + redirect to sanctioned path (instant)
 ```
 
 The demos self-revert every injected bug on exit and replace the journal writer with
