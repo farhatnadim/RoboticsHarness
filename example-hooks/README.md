@@ -1,7 +1,9 @@
 # Hooks in RoboticsHarness — presentation notes
 
 Companion material: [EXAMPLES.md](EXAMPLES.md) (captured failure → auto-correct
-walkthroughs) and [demos/](demos/) (re-runnable live demos, safe to run repeatedly).
+walkthroughs), [demos/](demos/) (re-runnable live demos, safe to run repeatedly),
+and [ARCHITECTURE.md](ARCHITECTURE.md) (how agent hooks, git hooks, and CI
+combine into one layered feedback architecture).
 
 ## 1. What the hooks are and how they're programmed into the harness
 
@@ -74,22 +76,43 @@ evolution/journal.ndjson ──/evolve──▶ improved rules, skills, hooks (E
   self-improvement loop (`/evolve` clusters recurring friction into rule/skill/hook
   changes, recorded in `EVOLUTION.md`).
 
-## 2. These hooks vs. git hooks (pre-commit)
+## 2. These hooks vs. git hooks
 
-Both intercept a workflow at a checkpoint and can veto it. The difference is *when*
-they fire and *who consumes the failure*.
+Git ships a whole family of hooks, not just `pre-commit`: client-side
+(`pre-commit`, `prepare-commit-msg`, `commit-msg`, `post-commit`, `pre-push`,
+`pre-rebase`, `post-checkout`, `post-merge`, `post-rewrite`, the `applypatch`
+trio) and server-side (`pre-receive`, `update`, `post-receive`). They split into
+the same two roles as the agent hooks — *gates* that can veto an operation
+(`pre-commit`, `commit-msg`, `pre-push`, `pre-receive`) and *sensors* that only
+observe one (`post-commit`, `post-checkout`, `post-merge`) — and the lifecycle
+parallels are close:
+
+| Claude Code hook | git analogue | shared idea |
+|---|---|---|
+| PreToolUse gate (`guard_journal`) | `pre-commit`, `pre-receive` | veto before state changes |
+| PostToolUse gate (`lint_cpp`) | `commit-msg` | inspect the change, reject with a reason |
+| Stop gate (`gate_stop`) | `pre-push` | last gate before the work "leaves" |
+| PostToolUse sensor (`capture_failure`), SessionEnd | `post-commit`, `post-receive` | observe and log, never block |
+| SessionStart context injection | `post-checkout`, `post-merge` | prepare the environment for what comes next |
+
+Both systems intercept a workflow at a checkpoint and can veto it. The real
+difference is *when* they fire and *who consumes the failure*. The table below
+uses `pre-commit` as the representative gate — it's where this repo's checks
+(format, lint, sanitized tests) would naturally live — but the rows apply to
+the client-side family as a whole; server-side hooks are noted where they
+differ.
 
 | | Claude Code hooks | git pre-commit hooks |
 |---|---|---|
-| Trigger | every tool call, turn end, session boundary | only when someone commits |
+| Trigger | every tool call, turn end, session boundary | only at git lifecycle points: commit, merge, rebase, checkout, push, receive |
 | Failure consumer | **the agent, mid-task, with full context** | a human, often long after writing the code |
 | Auto-correction | yes — exit-2 stderr becomes model input; the agent edits and retries in the same turn | no — the commit aborts; a human fixes manually |
 | Feedback latency | seconds after the offending edit | minutes-to-days later, at commit time |
 | Coverage | only changes made *through the agent* | every commit path: humans, IDEs, other tools |
-| Bypassability | agent has no `--no-verify`; enforced by the harness | trivially skipped: `git commit --no-verify` |
+| Bypassability | agent has no `--no-verify`; enforced by the harness | client-side hooks trivially skipped (`git commit --no-verify`); only server-side `pre-receive`/`update` truly enforce |
 | Granularity | single file edit / single command / turn | the whole staged diff at once |
 | Available context | tool input JSON, tool response, session id, lifecycle stage | staged files only |
-| Lifecycle reach | session start/end, "agent wants to stop", pre-tool veto | commit/push/merge only |
+| Lifecycle reach | session start/end, "agent wants to stop", pre-tool veto | commit/merge/rebase/checkout/push (+ server-side receive) — never per-edit or per-command |
 | Cost profile | seconds added to *every* edit/turn (must stay fast) | one-time cost at commit |
 
 **Advantages of the agent-side hooks**
@@ -109,8 +132,10 @@ they fire and *who consumes the failure*.
 
 1. *Coverage gap*: a human editing in vim, or any non-Claude tool, bypasses every
    agent hook. Git hooks (and CI) see all contributors.
-2. *Tool lock-in*: they only exist inside Claude Code sessions; pre-commit is
-   universal across editors and machines.
+2. *Tool lock-in*: they only exist inside Claude Code sessions; git hooks work
+   across editors and machines (though client-side ones live unversioned in
+   `.git/hooks` and need installing per clone — only server-side hooks and CI
+   are truly universal).
 3. *Latency tax on every edit* — a slow hook punishes the whole session, which is why
    `gate_stop.py` stamps green runs (0.04 s when nothing changed) and `lint_cpp.py`
    lints only the touched file.
@@ -136,3 +161,17 @@ bash example-hooks/demos/demo_3_guard_journal.sh        # PreToolUse veto + redi
 The demos self-revert every injected bug on exit and replace the journal writer with
 a printing stub (`demos/_journal.py`), so repeated live runs never pollute the
 append-only `evolution/journal.ndjson`.
+
+## 4. Combining the layers: one policy, three rings
+
+Section 2 ends with "the same checks can — and arguably should — run in both."
+[ARCHITECTURE.md](ARCHITECTURE.md) develops that into an actual architecture:
+checks defined **once** as plain scripts, then invoked by three enforcement
+rings that differ only in scope and policy — agent hooks (touched file,
+seconds, auto-correcting), git hooks (staged diff, commit-time veto), and CI
+(full tree, fail-closed authority). The design rule that keeps developers from
+being shouted at late is *no new news at commit time*: if an outer ring fails
+on something an inner ring could have known, push the check left. It also
+spells out the LLM-wariness constraints (gate on facts, not the agent's
+claims; the agent can never weaken its own gates; escape hatches must leave
+residue) and the concrete steps to retrofit rings 1 and 2 onto this repo.
