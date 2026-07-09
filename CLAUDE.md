@@ -46,6 +46,8 @@ Never claim done without having run the build and tests.
 - **Promotion rule**: code used by ≥2 problems, or clearly general, gets promoted into
   `core/` with tests. Record the promotion as a `note` entry in the journal.
 - Scope that gets cut goes to `GOALS.md` as a `- [ ]` item — never silently dropped.
+- `archive/` holds closed-out topics (see `AGENTS.md`) — never read it unless the
+  user explicitly mentions it.
 
 ## Evolution rules
 

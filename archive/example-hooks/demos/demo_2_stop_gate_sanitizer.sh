@@ -12,7 +12,7 @@
 # are stubbed out (see _journal.py in this directory). Takes ~40s (two
 # build+test cycles).
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
 export CLAUDE_PROJECT_DIR="$PWD"
 
 testfile=problems/cart-pole/tests/test_smoke.cpp
@@ -21,7 +21,7 @@ git diff --quiet -- "$testfile" || { echo "refusing to run: $testfile has uncomm
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"; git checkout -- "'"$testfile"'"' EXIT
 cp .claude/hooks/gate_stop.py "$tmp/"
-export PYTHONPATH="$PWD/example-hooks/demos:$PWD/.claude/hooks"
+export PYTHONPATH="$PWD/archive/example-hooks/demos:$PWD/.claude/hooks"
 
 gate() {
     rc=0

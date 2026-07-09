@@ -9,7 +9,7 @@
 #
 # Runs the real hook directly — it only reads, so there is nothing to revert.
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
 export CLAUDE_PROJECT_DIR="$PWD"
 
 echo "=== 1. Agent attempts: Edit(file_path=evolution/journal.ndjson) ==="

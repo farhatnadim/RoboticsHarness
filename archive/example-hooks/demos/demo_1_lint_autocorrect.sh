@@ -9,7 +9,7 @@
 # Safe to re-run: the injected line is reverted on exit, and journal writes
 # are stubbed out (see _journal.py in this directory).
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
 export CLAUDE_PROJECT_DIR="$PWD"
 
 header=problems/cart-pole/include/cart_pole_model.hpp
@@ -18,7 +18,7 @@ git diff --quiet -- "$header" || { echo "refusing to run: $header has uncommitte
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"; git checkout -- "'"$header"'"' EXIT
 cp .claude/hooks/lint_cpp.py "$tmp/"
-export PYTHONPATH="$PWD/example-hooks/demos:$PWD/.claude/hooks"
+export PYTHONPATH="$PWD/archive/example-hooks/demos:$PWD/.claude/hooks"
 
 payload() { printf '{"tool_input":{"file_path":"%s/%s"}}' "$PWD" "$header"; }
 
